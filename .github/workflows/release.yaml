@@ -140,14 +140,14 @@ jobs:
           do
             openssl dgst -$METHOD $FILE | sed 's/([^)]*)//g' >>$DGST
           done
-#       - name: Change the name
-#         run: |
-#           mv build_assets CloudflareSpeedtest-$ASSET_NAME
-#       - name: Upload binaries to release
-#         uses: svenstaro/upload-release-action@v2
-#         if: github.event_name == 'release'
-#         with:
-#           repo_token: ${{ secrets.GITHUB_TOKEN }}
-#           file: ./CloudflareSpeedtest-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
-#           tag: ${{ github.ref }}
-#           file_glob: true
+      - name: Change the name
+        run: |
+          mv build_assets lite-$ASSET_NAME
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          repo_token: ${{ secrets.GAYHUB_TOKEN }}
+          file: ./lite-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
+          tag: ${{ github.ref }}
+          file_glob: true
