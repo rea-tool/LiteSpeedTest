@@ -1,45 +1,29 @@
-name: Go
-on: [push, pull_request]
+name: Build Test
+on:
+  push:
+    branches:
+      - master
 jobs:
-
-  build:
-    name: Build
+  Build:
+    name: Build Linux Version
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Go
+      - uses: actions/checkout@v2
+      - name: Setting up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-
-      - name: Cache go module
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Get dependencies, run test and static check
+          go-version: 1.17
+      - name: Building
         run: |
-          go version
           GOOS=js GOARCH=wasm go get -u ./...
+          cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/wasm_exec.js
           GOOS=js GOARCH=wasm go build -o ./web/main.wasm ./wasm
-
-      - name: Build
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          NAME: lite
-          BINDIR: bin
-        run: make -j releases
-
-      - name: Upload Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          go build -o lite
+          # 在此生成一个release文件夹，用来做接下来的打包成品使用
+          mkdir release
+          cp main release/main
+      - name: Uploading
+        uses: actions/upload-artifact@v1
         with:
-          files: bin/*
-          draft: true
+          name: release_linux # 生成的压缩包名称
+          path: release # 需要打包的路径
